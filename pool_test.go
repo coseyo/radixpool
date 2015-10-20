@@ -29,7 +29,7 @@ func Test_Pool(t *testing.T) {
 
 	pool.CarefullyPut(rc, &err)
 
-	rc, err = pool.Get()
-	str, _ = rc.Conn.Cmd("GET", "a").Str()
+	str, _ = pool.Cmd("GET", "a").Str()
 	fmt.Println(str)
+
 }
