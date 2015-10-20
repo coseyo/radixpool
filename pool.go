@@ -159,19 +159,19 @@ func (p *Pool) Cmd(cmd string, args ...interface{}) *redis.Reply {
 // redis.CmdError. It would be used like the following:
 //
 //	func doSomeThings(p *Pool) error {
-//		conn, redisErr := p.Get()
+//		rc, redisErr := p.Get()
 //		if redisErr != nil {
 //			return redisErr
 //		}
-//		defer p.CarefullyPut(conn, &redisErr)
+//		defer p.CarefullyPut(cn, &redisErr)
 //
 //		var i int
-//		i, redisErr = conn.Cmd("GET", "foo").Int()
+//		i, redisErr = rc.Conn.Cmd("GET", "foo").Int()
 //		if redisErr != nil {
 //			return redisErr
 //		}
 //
-//		redisErr = conn.Cmd("SET", "foo", i * 3).Err
+//		redisErr = rc.Conn.Cmd("SET", "foo", i * 3).Err
 //		return redisErr
 //	}
 //
