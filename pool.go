@@ -20,6 +20,7 @@ type Pool struct {
 	clientTimeout time.Duration
 }
 
+// add createdTime to check timeout
 type redisClient struct {
 	Conn        *redis.Client
 	createdTime time.Time
@@ -196,7 +197,7 @@ func (p *Pool) Empty() {
 	}
 }
 
-// generate a client and put it back to the pool
+// generate a client
 func (p *Pool) generate() (*redisClient, error) {
 	conn, err := p.df(p.network, p.addr)
 	if err != nil {
