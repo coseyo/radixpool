@@ -206,6 +206,5 @@ func (p *Pool) generate() (*redisClient, error) {
 		Conn:        conn,
 		createdTime: time.Now(),
 	}
-	p.Put(rc)
 	return rc, nil
 }
