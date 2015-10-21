@@ -111,20 +111,11 @@ func (p *Pool) Get() (*redisClient, error) {
 	case rc := <-p.pool:
 		if p.clientTimeout > 0 && time.Now().Sub(rc.createdTime) > p.clientTimeout {
 			rc.Conn.Close()
-			return p.Get()
+			return p.generate()
 		}
 		return rc, nil
 	default:
-		conn, err := p.df(p.network, p.addr)
-		if err != nil {
-			return nil, err
-		}
-		rc := &redisClient{
-			Conn:        conn,
-			createdTime: time.Now(),
-		}
-		p.Put(rc)
-		return rc, nil
+		return p.generate()
 	}
 }
 
@@ -203,4 +194,18 @@ func (p *Pool) Empty() {
 			return
 		}
 	}
+}
+
+// generate a client and put it back to the pool
+func (p *Pool) generate() (*redisClient, error) {
+	conn, err := p.df(p.network, p.addr)
+	if err != nil {
+		return nil, err
+	}
+	rc := &redisClient{
+		Conn:        conn,
+		createdTime: time.Now(),
+	}
+	p.Put(rc)
+	return rc, nil
 }

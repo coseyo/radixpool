@@ -11,12 +11,10 @@ func Test_Pool(t *testing.T) {
 
 	rc, err := pool.Get()
 
-	fmt.Println(err)
-
 	rc.Conn.Cmd("SET", "a", "b")
 
 	str, _ := rc.Conn.Cmd("GET", "a").Str()
-	fmt.Println(str)
+	fmt.Println("GET1", str)
 
 	pool.CarefullyPut(rc, &err)
 
@@ -25,11 +23,11 @@ func Test_Pool(t *testing.T) {
 	rc, err = pool.Get()
 
 	str, _ = rc.Conn.Cmd("GET", "a").Str()
-	fmt.Println(str)
+	fmt.Println("GET2", str)
 
 	pool.CarefullyPut(rc, &err)
 
 	str, _ = pool.Cmd("GET", "a").Str()
-	fmt.Println(str)
+	fmt.Println("GET3", str)
 
 }
