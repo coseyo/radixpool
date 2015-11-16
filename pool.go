@@ -135,15 +135,20 @@ func (p *Pool) Put(rc *redisClient) {
 // Cmd automatically gets one client from the pool, executes the given command
 // (returning its result), and puts the client back in the pool
 func (p *Pool) Cmd(cmd string, args ...interface{}) *redis.Reply {
+	var (
+		reply *redis.Reply
+		err   error
+	)
 	rc, err := p.Get()
 	if err != nil {
 		return &redis.Reply{
 			Err: err,
 		}
 	}
-	defer p.Put(rc)
-
-	return rc.Conn.Cmd(cmd, args...)
+	reply = rc.Conn.Cmd(cmd, args...)
+	err = reply.Err
+	defer p.CarefullyPut(rc, &err)
+	return reply
 }
 
 // A useful helper method which acts as a wrapper around Put. It will only
