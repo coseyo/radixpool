@@ -78,6 +78,9 @@ func NewCustomPool(network, addr string, size int, clientTimeout time.Duration, 
 	for i := range pool {
 		p.pool <- pool[i]
 	}
+
+	p.keepalive()
+
 	return &p, nil
 }
 
@@ -118,6 +121,16 @@ func (p *Pool) Get() (*redisClient, error) {
 	default:
 		return p.generate()
 	}
+}
+
+// keep the client alive
+func (p *Pool) keepalive() {
+	go func() {
+		for {
+			p.Cmd("PING")
+			time.Sleep(1 * time.Second)
+		}
+	}()
 }
 
 // Returns a client back to the pool. If the pool is full the client is closed
