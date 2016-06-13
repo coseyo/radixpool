@@ -79,7 +79,7 @@ func NewCustomPool(network, addr string, size int, clientTimeout time.Duration, 
 		p.pool <- pool[i]
 	}
 
-	p.keepalive()
+	p.heartbeat()
 
 	return &p, nil
 }
@@ -123,8 +123,8 @@ func (p *Pool) Get() (*redisClient, error) {
 	}
 }
 
-// keep the client alive
-func (p *Pool) keepalive() {
+// heartbeat keep the client alive
+func (p *Pool) heartbeat() {
 	go func() {
 		for {
 			p.Cmd("PING")
