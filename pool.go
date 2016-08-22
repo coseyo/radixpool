@@ -114,7 +114,9 @@ func (p *Pool) Get() (*redisClient, error) {
 	select {
 	case rc := <-p.pool:
 		if p.clientTimeout > 0 && time.Now().Sub(rc.createdTime) > p.clientTimeout {
-			rc.Conn.Close()
+			if err := rc.Conn.Close(); err != nil {
+				return nil, err
+			}
 			return p.generate()
 		}
 		return rc, nil
