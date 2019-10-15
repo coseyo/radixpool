@@ -4,6 +4,7 @@ package radixpool
 // thread-safe
 
 import (
+	"strings"
 	"time"
 
 	"github.com/fzzy/radix/redis"
@@ -87,8 +88,24 @@ func NewCustomPool(network, addr string, size int, clientTimeout time.Duration, 
 // Creates a new Pool whose connections are all created using
 // redis.Dial(network, addr). The size indicates the maximum number of idle
 // connections to have waiting to be used at any given moment
-func NewPool(network, addr string, size int, clientTimeout time.Duration) (*Pool, error) {
-	return NewCustomPool(network, addr, size, clientTimeout, redis.Dial)
+func NewPool(network, addr string, size int, clientTimeout time.Duration, password string) (*Pool, error) {
+	df := func(network, addr string) (*redis.Client, error) {
+		client, err := redis.Dial(network, addr)
+		if err != nil {
+			return nil, err
+		}
+
+		if password != "" {
+			err = client.Cmd("AUTH", password).Err
+			if err != nil && !isNoPasswordSetErr(err) {
+				client.Close()
+				return nil, err
+			}
+		}
+
+		return client, nil
+	}
+	return NewCustomPool(network, addr, size, clientTimeout, df)
 }
 
 // Calls NewPool, but if there is an error it return a pool of the same size but
@@ -96,7 +113,7 @@ func NewPool(network, addr string, size int, clientTimeout time.Duration) (*Pool
 // this happens there might be something wrong with the redis instance you're
 // connecting to)
 func NewOrEmptyPool(network, addr string, size int) *Pool {
-	pool, err := NewPool(network, addr, size, 0)
+	pool, err := NewPool(network, addr, size, 0, "")
 	if err != nil {
 		pool = &Pool{
 			network: network,
@@ -228,4 +245,8 @@ func (p *Pool) generate() (*redisClient, error) {
 		createdTime: time.Now(),
 	}
 	return rc, nil
+}
+
+func isNoPasswordSetErr(err error) bool {
+	return strings.Contains(err.Error(), "no password is set")
 }
