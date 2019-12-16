@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Pool(t *testing.T) {
-	pool, err := NewPool("tcp", "127.0.0.1:6379", 10, 3*time.Second)
+	pool, err := NewPool("tcp", "127.0.0.1:6379", 10, 3*time.Second, "", 0)
 
 	rc, err := pool.Get()
 

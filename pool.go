@@ -88,7 +88,7 @@ func NewCustomPool(network, addr string, size int, clientTimeout time.Duration, 
 // Creates a new Pool whose connections are all created using
 // redis.Dial(network, addr). The size indicates the maximum number of idle
 // connections to have waiting to be used at any given moment
-func NewPool(network, addr string, size int, clientTimeout time.Duration, password string) (*Pool, error) {
+func NewPool(network, addr string, size int, clientTimeout time.Duration, password string, dbNum int) (*Pool, error) {
 	df := func(network, addr string) (*redis.Client, error) {
 		client, err := redis.Dial(network, addr)
 		if err != nil {
@@ -103,7 +103,11 @@ func NewPool(network, addr string, size int, clientTimeout time.Duration, passwo
 			}
 		}
 
-		return client, nil
+		if dbNum > 0 {
+			err = client.Cmd("SELECT", dbNum).Err
+		}
+
+		return client, err
 	}
 	return NewCustomPool(network, addr, size, clientTimeout, df)
 }
@@ -113,7 +117,7 @@ func NewPool(network, addr string, size int, clientTimeout time.Duration, passwo
 // this happens there might be something wrong with the redis instance you're
 // connecting to)
 func NewOrEmptyPool(network, addr string, size int) *Pool {
-	pool, err := NewPool(network, addr, size, 0, "")
+	pool, err := NewPool(network, addr, size, 0, "", 0)
 	if err != nil {
 		pool = &Pool{
 			network: network,
