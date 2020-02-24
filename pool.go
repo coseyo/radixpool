@@ -96,8 +96,8 @@ func NewPool(network, addr string, size int, clientTimeout time.Duration, passwo
 		}
 
 		if password != "" {
-			err = client.Cmd("AUTH", password).Err
-			if err != nil && !isNoPasswordSetErr(err) {
+			err = filterNoPasswordSetErr(client.Cmd("AUTH", password).Err)
+			if err != nil {
 				client.Close()
 				return nil, err
 			}
@@ -251,6 +251,9 @@ func (p *Pool) generate() (*redisClient, error) {
 	return rc, nil
 }
 
-func isNoPasswordSetErr(err error) bool {
-	return strings.Contains(err.Error(), "no password is set")
+func filterNoPasswordSetErr(err error) error {
+	if strings.Contains(err.Error(), "no password is set") {
+		return nil
+	}
+	return err
 }
