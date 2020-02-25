@@ -252,7 +252,7 @@ func (p *Pool) generate() (*redisClient, error) {
 }
 
 func filterNoPasswordSetErr(err error) error {
-	if strings.Contains(err.Error(), "no password is set") {
+	if err != nil && strings.Contains(err.Error(), "no password is set") {
 		return nil
 	}
 	return err
